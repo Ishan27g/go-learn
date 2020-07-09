@@ -1,5 +1,5 @@
 #run without compiling
-go run Main.go
+go run main.go
 
 #compile a binary
-go build Main.go
+#go build main.go
