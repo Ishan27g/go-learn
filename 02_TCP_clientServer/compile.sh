@@ -1,3 +1,3 @@
-go build tcpServer.go
-go build tcpClient.go
+go build server/tcpServer.go
+go build client/tcpClient.go
 echo "Enter port number while running"
