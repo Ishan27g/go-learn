@@ -51,7 +51,8 @@ func initServer(port string) {
 }
 
 func connectionHandler(conn net.Conn, clientID int) {
-	//Stay connected untill CLIENT_EXIT
+	//Stay connected untill client exits
+	fmt.Println("connected with clientID ", clientID)
 	for {
 		data, err := bufio.NewReader(conn).ReadString('\n')
 		if err != nil {
@@ -66,10 +67,10 @@ func connectionHandler(conn net.Conn, clientID int) {
 		fmt.Println(recv)
 
 		//return client Id as every message response
-		rsp := strconv.Itoa(clientID)
-		rsp += "\n"
+		rsp := strconv.Itoa(clientID) + "\n"
 
 		conn.Write([]byte(string(rsp)))
 	}
+	fmt.Println("Closing connection with clientID ", clientID)
 	conn.Close()
 }
