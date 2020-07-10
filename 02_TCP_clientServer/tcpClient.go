@@ -32,7 +32,7 @@ func initClient(port string) {
 	}
 
 	//send dummmy message to get clientID
-	fmt.Fprintf(conn, "hello\n")
+	fmt.Fprintf(conn, "\n")
 
 	//Read response
 	data, err := bufio.NewReader(conn).ReadString('\n')
