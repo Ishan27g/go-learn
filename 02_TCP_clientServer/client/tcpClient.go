@@ -18,7 +18,6 @@ func main() {
 
 	port := ":"
 	port += args[1]
-
 	fmt.Println("Connecting client to port : " + port)
 
 	initClient(port)
@@ -65,11 +64,11 @@ func initClient(port string) {
 		//check exit condition
 		msg = strings.TrimSpace(string(msg))
 		if msg == "exit" || msg == "Exit" {
+
 			fmt.Println("Client exiting...")
+			//send exit message to Server
+			fmt.Fprintf(conn, "exit"+"\n")
 			return
 		}
 	}
-
-	//send exit message to get clientID
-	fmt.Fprintf(conn, "exit")
 }

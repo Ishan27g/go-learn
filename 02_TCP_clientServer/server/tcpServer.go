@@ -19,7 +19,6 @@ func main() {
 
 	port := ":"
 	port += args[1]
-
 	fmt.Println("Starting Server on port : " + port)
 
 	initServer(port)
@@ -36,7 +35,6 @@ func initServer(port string) {
 	defer listen.Close()
 
 	//Handle multiple clients using go-routines
-
 	for {
 		conn, err := listen.Accept()
 		if err != nil {
