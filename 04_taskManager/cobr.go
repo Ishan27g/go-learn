@@ -1,19 +1,54 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
 
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 )
 
+func appendTask(db *sql.DB, num int, task string) {
+
+	str := "Insert INTO tasks(task) values ('" + task + "')"
+	statement, _ := db.Prepare(str)
+	statement.Exec()
+
+}
+func displayTask(db *sql.DB) {
+
+	str := "SELECT * FROM tasks"
+	rows, err := db.Query(str)
+	if err != nil {
+		fmt.Println("Error querying db")
+	}
+	var id int
+	var task string
+	for rows.Next() {
+		rows.Scan(&id, &task)
+		fmt.Println(id, task)
+	}
+
+}
+
+func delTask(db *sql.DB, id int) {
+	//todo add check for valid id before deleting
+	str := "DELETE FROM tasks where id = " + strconv.Itoa(id)
+	statement, _ := db.Prepare(str)
+	statement.Exec()
+}
+
 func main() {
 
-	//	var taskList []int
 	var taskNum int = 0
-
 	taskMap := make(map[int]string)
+	db, err := sql.Open("sqlite3", "./tasks.db")
+	if err != nil {
+		fmt.Println("error opening db")
+		fmt.Println(err)
+	}
 
 	var cmdAdd = &cobra.Command{
 		Use:   "add [string to print]",
@@ -22,27 +57,18 @@ func main() {
 		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			taskMap[taskNum] = strings.Join(args, " ")
+			appendTask(db, taskNum, taskMap[taskNum])
 			taskNum++
 		},
 	}
-	/*
-		var cmdEcho = &cobra.Command{
-			Use:   "list",
-			Short: "list all tasks",
-			Long:  `list all tasks created`,
-			Args:  cobra.MinimumNArgs(0),
-			Run: func(cmd *cobra.Command, args []string) {
-				fmt.Println("<<listing all task here>>")
-			},
-		}
-	*/
+
 	var cmdDisplay = &cobra.Command{
 		Use:   "display",
 		Short: "display all tasks",
 		Long:  `display all tasks created`,
 		Args:  cobra.MinimumNArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("<<displaying all task here>>")
+			displayTask(db)
 		},
 	}
 
@@ -59,18 +85,12 @@ func main() {
 			}
 			*/
 			taskNumber, _ := strconv.Atoi(strings.Join(args, " "))
-			fmt.Println(taskNumber)
+			delTask(db, taskNumber)
 		},
 	}
 
-	//cmdTimes.Flags().IntVarP(&echoTimes, "times", "t", 1, "times to echo the input")
-
 	var rootCmd = &cobra.Command{Use: "app"}
-	//rootCmd.AddCommand(cmdPrint, cmdEcho)
-	//cmdEcho.AddCommand(cmdTimes)
-
 	rootCmd.AddCommand(cmdAdd, cmdDel, cmdDisplay)
-
 	rootCmd.Execute()
 
 }
