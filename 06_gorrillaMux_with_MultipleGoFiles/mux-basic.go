@@ -35,5 +35,6 @@ func main() {
 	r.HandleFunc("/books", getMethod).Methods("GET")
 	r.HandleFunc("/books/{title}", deleteMethod).Methods("DELETE")
 
+	fmt.Print("Started server on port 80")
 	http.ListenAndServe(":80", r)
 }
