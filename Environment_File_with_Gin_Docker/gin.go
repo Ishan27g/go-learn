@@ -3,14 +3,18 @@ package main
 //reflex -g 'gin.go' -s -- sh -c 'go run gin.go'
 
 import (
-	`fmt`
 	"net/http"
 	`os`
+	`sync`
 
 	"ginServer/utils"
 
 	"github.com/gin-gonic/gin"
 )
+
+const HttpPort 		=	"8080"
+const EnvFile 		=	".env"
+const SetupSteps	=	3
 
 func helloGin(c *gin.Context) {
 	c.String(http.StatusOK, "Hello")
@@ -24,21 +28,53 @@ func configureGin() *gin.Engine{
 	r := gin.Default()
 	return r
 }
-
+func getPort() string{
+	port, envPort:= os.LookupEnv("SRV_PORT")
+	if envPort {return ":" + port} else {return ":" + HttpPort}
+}
 func main() {
+	var r *gin.Engine
+
+	//Create goroutines to setup server
+	var setup = make(chan bool, SetupSteps)
+	var wg sync.WaitGroup
+
+	wg.Add(SetupSteps)
 	//load env variables into os.environment
-	if nil != utils.ReadEnv(".env"){
-		return
+	go func() {
+		defer wg.Done()
+		if nil != utils.ReadEnv(EnvFile){
+			setup <- false
+		}else {
+			setup <- true
+		}
+	}()
+	//configure Gin and setup route
+	go func() {
+		defer wg.Done()
+		r = configureGin()
+		setup <- true
+		go func() {
+			defer wg.Done()
+			r.GET("/", helloGin)
+			setup <- true
+		}()
+	}()
+
+	wg.Wait()
+	close(setup)
+
+	for x := range setup{
+		println(x)
+		if !x {
+				println("Error in setup")
+			}
 	}
 
-	r := configureGin()
-
-	r.GET("/", helloGin)
-
-	port:= ":" + os.Getenv("SRV_PORT")
-	fmt.Println("Listening on " + port)
-
-	_ = r.Run(port)
+	println("Listening on " + getPort())
+	_ = r.Run(getPort())
 
 }
+
+
 
